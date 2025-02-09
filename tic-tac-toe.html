@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe</title>
+    <style>
+        body {
+            background: linear-gradient(to right, #a1c4fd, #c2e9fb);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .game {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            gap: 5px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .square {
+            width: 100px;
+            height: 100px;
+            font-size: 2rem;
+            text-align: center;
+            border: 2px solid black;
+            background-color: white;
+            cursor: pointer;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="game">
+        <h1>Tic-Tac-Toe</h1>
+        <button onclick="toggleMode()">Mode: PvP</button>
+        <div class="board" id="board"></div>
+        <h2 id="status">Next Player: X</h2>
+        <button onclick="restartGame()">Restart</button>
+    </div>
+    <script>
+        let board = Array(9).fill(null);
+        let isXNext = true;
+        let mode = "PvP";
+        const winningCombinations = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8],
+            [0, 3, 6], [1, 4, 7], [2, 5, 8],
+            [0, 4, 8], [2, 4, 6]
+        ];
+        
+        function checkWinner() {
+            for (let [a, b, c] of winningCombinations) {
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    return board[a];
+                }
+            }
+            return board.includes(null) ? null : "Draw";
+        }
+        
+        function handleClick(index) {
+            if (board[index] || checkWinner()) return;
+            
+            board[index] = isXNext ? "X" : "O";
+            isXNext = !isXNext;
+            updateBoard();
+            
+            if (mode === "AI" && !isXNext) {
+                setTimeout(() => {
+                    let aiMove = board.findIndex(cell => cell === null);
+                    if (aiMove !== -1) {
+                        board[aiMove] = "O";
+                        isXNext = true;
+                        updateBoard();
+                    }
+                }, 500);
+            }
+        }
+        
+        function updateBoard() {
+            const boardElement = document.getElementById("board");
+            boardElement.innerHTML = "";
+            board.forEach((value, index) => {
+                const button = document.createElement("button");
+                button.classList.add("square");
+                button.textContent = value || "";
+                button.onclick = () => handleClick(index);
+                boardElement.appendChild(button);
+            });
+            
+            let winner = checkWinner();
+            document.getElementById("status").textContent = 
+                winner ? (winner === "Draw" ? "It's a Draw!" : `Winner: ${winner}`) : `Next Player: ${isXNext ? "X" : "O"}`;
+        }
+        
+        function restartGame() {
+            board = Array(9).fill(null);
+            isXNext = true;
+            updateBoard();
+        }
+        
+        function toggleMode() {
+            mode = mode === "PvP" ? "AI" : "PvP";
+            document.querySelector("button").textContent = "Mode: " + mode;
+            restartGame();
+        }
+        
+        document.addEventListener("DOMContentLoaded", updateBoard);
+    </script>
+</body>
+</html>
